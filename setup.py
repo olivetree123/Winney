@@ -2,7 +2,7 @@
 
 from os import path
 from codecs import open
-from distutils.core import setup
+from setuptools import setup
 
 here = path.abspath(path.dirname(__file__))
 
@@ -11,7 +11,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name = 'winney',
-    version = '0.1.5',
+    version = '0.1.0',
     author = 'olivetree123',
     license = 'BSD',
     packages = ['winney'],
