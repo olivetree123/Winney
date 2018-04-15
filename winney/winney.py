@@ -3,7 +3,7 @@
 import requests
 import urllib.parse
 
-class Winny(object):
+class Winney(object):
 
     def __init__(self, host, port="", protocol="http"):
         self.host = host
@@ -68,7 +68,7 @@ class Winny(object):
 
 
 if __name__ == "__main__":
-    wy = Winny(host="www.baidu.com")
+    wy = Winney(host="www.baidu.com")
     wy.add_url(method="get", uri="/", function_name="download")
     wy.download()
     t = wy.get_bytes()

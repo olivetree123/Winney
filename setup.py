@@ -11,12 +11,12 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name = 'winney',
-    version = '0.1.0',
+    version = '0.2.0',
     author = 'olivetree123',
     license = 'BSD',
     packages = ['winney'],
     author_email = 'olivetree123@163.com',
-    url = 'https://github.com/olivetree123/Winny',
+    url = 'https://github.com/olivetree123/Winney',
     description = 'Object-Oriented HTTP Request',
     long_description = long_description,
     long_description_content_type = 'text/markdown',
