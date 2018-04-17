@@ -16,9 +16,8 @@ class Winney(object):
         self.result = None
     
     def _bind_func_url(self, url, method):
-        def req(params=None, format="json"):
-            print("url: ", url)
-            return self.request(method, url, params)
+        def req(data=None, format="json"):
+            return self.request(method, url, data)
         return req
     
     def add_url(self, method, uri, function_name):
@@ -27,11 +26,11 @@ class Winney(object):
         url = urllib.parse.urljoin(self.domain, uri)
         setattr(self, function_name, self._bind_func_url(url, method))
     
-    def request(self, method, url, params=None):
+    def request(self, method, url, data=None):
         if method.upper() == "GET":
-            return self.get(url, params)
+            return self.get(url, data)
         if method.upper() == "POST":
-            return self.post(url, params)
+            return self.post(url, data)
 
     def get(self, url, params=None):
         assert url
@@ -65,6 +64,10 @@ class Winney(object):
         if self.result.ok:
             return self.result.content
         raise Exception("Error, http status code = {}".format(self.result.status_code))
+    
+    @property
+    def ok(self):
+        return self.result.ok
 
 
 if __name__ == "__main__":
