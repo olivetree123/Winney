@@ -5,7 +5,7 @@ import urllib.parse
 
 class Winney(object):
 
-    def __init__(self, host, port="", protocol="http"):
+    def __init__(self, host, port=80, protocol="http"):
         self.host = host
         self.port = port
         self.protocol = protocol
@@ -16,8 +16,8 @@ class Winney(object):
         self.result = None
     
     def _bind_func_url(self, url, method):
-        def req(data=None, format="json"):
-            return self.request(method, url, data)
+        def req(data=None, json=None, files=None):
+            return self.request(method, url, data, json, files)
         return req
     
     def add_url(self, method, uri, function_name):
@@ -26,21 +26,22 @@ class Winney(object):
         url = urllib.parse.urljoin(self.domain, uri)
         setattr(self, function_name, self._bind_func_url(url, method))
     
-    def request(self, method, url, data=None):
+    def request(self, method, url, data=None, json=None, files=None):
         if method.upper() == "GET":
             return self.get(url, data)
         if method.upper() == "POST":
-            return self.post(url, data)
+            return self.post(url, data=data, json=json, files=files)
 
     def get(self, url, params=None):
         assert url
         assert (not params or isinstance(params, dict))
         self.result = requests.get(url, params=params)
     
-    def post(self, url, data=None):
+    def post(self, url, data=None, json=None, files=None):
         assert url
         assert (not data or isinstance(data, dict))
-        self.result = requests.post(url, data=data)
+        assert (not json or isinstance(json, dict))
+        self.result = requests.post(url, data=data, json=json, files=files)
     
     def put(self, url, data=None):
         assert url
