@@ -65,6 +65,8 @@ class Result(object):
         setattr(result, "content", content)
         return result
 
+    def ok(self):
+        return self.status
     
     def get_bytes(self):
         return self.content
@@ -103,9 +105,10 @@ class Result(object):
 
 class Winney(object):
 
-    def __init__(self, host, port=80, protocol="http"):
+    def __init__(self, host, port=80, protocol="http", headers=None):
         self.host = host
         self.port = port
+        self.headers = headers
         self.protocol = protocol
         self.domain = "{}://{}".format(protocol, host)
         if port and port != 80:
@@ -119,10 +122,6 @@ class Winney(object):
             r = Result.load_from_cache(url2, method)
             if r:
                 return r
-            # r, err = self.request(method, url2, data, json, files)
-            # if not err:
-            #     return Result(r, url2, method, cache_time), None
-            # return None, err
             r = self.request(method, url2, data, json, files)
             return Result(r, url2, method, cache_time)
         return req
@@ -146,36 +145,18 @@ class Winney(object):
     def get(self, url, params=None):
         assert url
         assert (not params or isinstance(params, dict))
-        # try:
-        #     r = requests.get(url, params=params)
-        # except Exception as e:
-        #     print(e)
-        #     return None, e
-        # return r, None
-        return requests.get(url, params=params)
+        return requests.get(url, params=params, headers=self.headers)
     
     def post(self, url, data=None, json=None, files=None):
         assert url
         assert (not data or isinstance(data, dict))
         assert (not json or isinstance(json, dict))
-        # try:
-        #     r = requests.post(url, data=data, json=json, files=files)
-        # except Exception as e:
-        #     print(e)
-        #     return None, e
-        # return r, None
-        return requests.post(url, data=data, json=json, files=files)
+        return requests.post(url, data=data, json=json, files=files, headers=self.headers)
     
     def put(self, url, data=None):
         assert url
         assert (not data or isinstance(data, dict))
-        # try:
-        #     r = requests.put(url, data)
-        # except Exception as e:
-        #     print(e)
-        #     return None, e
-        # return r, None
-        return requests.put(url, data)
+        return requests.put(url, data, headers=self.headers)
 
 
 if __name__ == "__main__":
