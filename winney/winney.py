@@ -117,12 +117,12 @@ class Winney(object):
         self.result = None
     
     def _bind_func_url(self, url, method, cache_time=None):
-        def req(data=None, json=None, files=None, **kwargs):
+        def req(data=None, json=None, files=None, headers=None, **kwargs):
             url2 = url.format(**kwargs)
             r = Result.load_from_cache(url2, method)
-            if r:
-                return r
-            r = self.request(method, url2, data, json, files)
+            # if r:
+            #     return r
+            r = self.request(method, url2, data, json, files, headers)
             return Result(r, url2, method, cache_time)
         return req
     
@@ -136,22 +136,31 @@ class Winney(object):
         url = urllib.parse.urljoin(self.domain, uri)
         setattr(self, function_name, self._bind_func_url(url, method, cache_time))
     
-    def request(self, method, url, data=None, json=None, files=None):
+    def request(self, method, url, data=None, json=None, files=None, headers=None):
         if method.upper() == "GET":
-            return self.get(url, data)
+            return self.get(url, data, headers=headers)
         if method.upper() == "POST":
-            return self.post(url, data=data, json=json, files=files)
+            return self.post(url, data=data, json=json, files=files, headers=headers)
 
-    def get(self, url, params=None):
+    def get(self, url, params=None, headers=None):
         assert url
         assert (not params or isinstance(params, dict))
-        return requests.get(url, params=params, headers=self.headers)
+        if headers and isinstance(headers, dict):
+            if self.headers:
+                headers.update(self.headers)
+        else:
+            headers = self.headers
+        return requests.get(url, params=params, headers=headers)
     
-    def post(self, url, data=None, json=None, files=None):
+    def post(self, url, data=None, json=None, files=None, headers=None):
         assert url
         assert (not data or isinstance(data, dict))
         assert (not json or isinstance(json, dict))
-        return requests.post(url, data=data, json=json, files=files, headers=self.headers)
+        if headers and isinstance(headers, dict):
+            headers = headers.update(self.headers) if self.headers else headers
+        else:
+            headers = self.headers
+        return requests.post(url, data=data, json=json, files=files, headers=headers)
     
     def put(self, url, data=None):
         assert url
