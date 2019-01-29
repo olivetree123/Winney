@@ -32,6 +32,8 @@ class Result(object):
             self.set_cache(cache_time)
     
     def set_cache(self, cache_time):
+        if not cache_time:
+            return
         if not (self.request_method and self.request_method.upper() == "GET"):
             print("Cache just for GET, but {} found".format(self.request_method))
             return None
@@ -114,14 +116,16 @@ class Winney(object):
         if port and port != 80:
             self.domain = self.domain+":"+str(port)
         self.RESULT_FORMATS = ["json", "unicode", "bytes"]
-        self.result = None
+        self.result = {}
+        self.apis = []
     
     def _bind_func_url(self, url, method, cache_time=None):
         def req(data=None, json=None, files=None, headers=None, **kwargs):
             url2 = url.format(**kwargs)
-            r = Result.load_from_cache(url2, method)
-            # if r:
-            #     return r
+            if cache_time:
+                r = Result.load_from_cache(url2, method)
+                if r:
+                    return r
             r = self.request(method, url2, data, json, files, headers)
             return Result(r, url2, method, cache_time)
         return req
@@ -133,8 +137,12 @@ class Winney(object):
             raise Exception("cache_time should more than 0, but {} found.".format(cache_time))
         method = method.upper()
         function_name = function_name.lower()
+        if function_name in self.apis:
+            raise Exception("Duplicate function_name, {}".format(function_name))
         url = urllib.parse.urljoin(self.domain, uri)
         setattr(self, function_name, self._bind_func_url(url, method, cache_time))
+        self.apis.append(function_name)
+        return getattr(self, function_name)
     
     def request(self, method, url, data=None, json=None, files=None, headers=None):
         if method.upper() == "GET":
@@ -142,15 +150,15 @@ class Winney(object):
         if method.upper() == "POST":
             return self.post(url, data=data, json=json, files=files, headers=headers)
 
-    def get(self, url, params=None, headers=None):
+    def get(self, url, data=None, headers=None):
         assert url
-        assert (not params or isinstance(params, dict))
+        assert (not data or isinstance(params, dict))
         if headers and isinstance(headers, dict):
             if self.headers:
                 headers.update(self.headers)
         else:
             headers = self.headers
-        return requests.get(url, params=params, headers=headers)
+        return requests.get(url, params=data, headers=headers)
     
     def post(self, url, data=None, json=None, files=None, headers=None):
         assert url
@@ -162,10 +170,33 @@ class Winney(object):
             headers = self.headers
         return requests.post(url, data=data, json=json, files=files, headers=headers)
     
-    def put(self, url, data=None):
+    def put(self, url, data=None, json=None, files=None, headers=None):
         assert url
         assert (not data or isinstance(data, dict))
-        return requests.put(url, data, headers=self.headers)
+        if headers and isinstance(headers, dict):
+            headers = headers.update(self.headers) if self.headers else headers
+        else:
+            headers = self.headers
+        return requests.put(url, data, json=json, files=files, headers=headers)
+    
+    def delete(self, url, headers=None):
+        assert url
+        assert (not data or isinstance(data, dict))
+        if headers and isinstance(headers, dict):
+            headers = headers.update(self.headers) if self.headers else headers
+        else:
+            headers = self.headers
+        return requests.delete(url, headers=headers)
+    
+    def options(self, url, headers=None):
+        assert url
+        assert (not data or isinstance(data, dict))
+        if headers and isinstance(headers, dict):
+            headers = headers.update(self.headers) if self.headers else headers
+        else:
+            headers = self.headers
+        return requests.options(url, headers=headers)
+
 
 
 if __name__ == "__main__":
