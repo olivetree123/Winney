@@ -10,8 +10,8 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name = "winney",
-    version = "0.2.5",
+    name = "Winney",
+    version = "0.2.6",
     author = "Gaojian",
     license = 'MIT',
     packages = ["winney"],

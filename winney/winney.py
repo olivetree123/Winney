@@ -18,18 +18,17 @@ class Result(object):
     def __init__(self, resp=None, url=None, method=None, cache_time=None):
         if resp and not isinstance(resp, requests.Response):
             raise Exception("resp should be object of requests.Response, but {} found.".format(type(resp)))
-        self.status   = resp.ok if resp else None
-        self.reason   = resp.reason if resp else None
-        self.content  = resp.content if resp else None
-        self.headers  = resp.headers.__repr__() if resp else None
-        self.encoding = resp.encoding if resp else None
-        self.status_code = resp.status_code if resp else None
+        self.status   = resp.ok
+        self.reason   = resp.reason
+        self.content  = resp.content
+        self.headers  = resp.headers.__repr__()
+        self.encoding = resp.encoding
+        self.status_code = resp.status_code
         self.request_url = url
         self.request_method = method
-        if resp:
-            if not self.encoding:
-                self.encoding = chardet.detect(self.content)["encoding"]
-            self.set_cache(cache_time)
+        if not self.encoding:
+            self.encoding = chardet.detect(self.content)["encoding"]
+        self.set_cache(cache_time)
     
     def set_cache(self, cache_time):
         if not cache_time:
@@ -121,6 +120,8 @@ class Winney(object):
     
     def _bind_func_url(self, url, method, cache_time=None):
         def req(data=None, json=None, files=None, headers=None, **kwargs):
+            if data and json:
+                raise Exception("data 和 json 不可以同时存在")
             url2 = url.format(**kwargs)
             if cache_time:
                 r = Result.load_from_cache(url2, method)
@@ -149,6 +150,8 @@ class Winney(object):
             return self.get(url, data, headers=headers)
         if method.upper() == "POST":
             return self.post(url, data=data, json=json, files=files, headers=headers)
+        if method.upper() == "PUT":
+            return self.put(url, data=data, json=json, files=files, headers=headers)
 
     def get(self, url, data=None, headers=None):
         assert url
@@ -165,7 +168,8 @@ class Winney(object):
         assert (not data or isinstance(data, dict))
         assert (not json or isinstance(json, dict))
         if headers and isinstance(headers, dict):
-            headers = headers.update(self.headers) if self.headers else headers
+            if self.headers:
+                headers.update(self.headers)
         else:
             headers = self.headers
         return requests.post(url, data=data, json=json, files=files, headers=headers)
