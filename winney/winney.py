@@ -155,7 +155,7 @@ class Winney(object):
 
     def get(self, url, data=None, headers=None):
         assert url
-        assert (not data or isinstance(params, dict))
+        assert (not data or isinstance(data, dict))
         if headers and isinstance(headers, dict):
             if self.headers:
                 headers.update(self.headers)
