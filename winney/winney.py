@@ -146,6 +146,15 @@ class Winney(object):
         return getattr(self, function_name)
     
     def request(self, method, url, data=None, json=None, files=None, headers=None):
+        if headers and isinstance(headers, dict):
+            if self.headers:
+                for key, value in self.headers.items():
+                    if key in headers:
+                        continue
+                    headers[key] = value
+                # headers.update(self.headers)
+        else:
+            headers = self.headers
         if method.upper() == "GET":
             return self.get(url, data, headers=headers)
         if method.upper() == "POST":
@@ -156,49 +165,27 @@ class Winney(object):
     def get(self, url, data=None, headers=None):
         assert url
         assert (not data or isinstance(data, dict))
-        if headers and isinstance(headers, dict):
-            if self.headers:
-                headers.update(self.headers)
-        else:
-            headers = self.headers
         return requests.get(url, params=data, headers=headers)
     
     def post(self, url, data=None, json=None, files=None, headers=None):
         assert url
         assert (not data or isinstance(data, dict))
         assert (not json or isinstance(json, dict))
-        if headers and isinstance(headers, dict):
-            if self.headers:
-                headers.update(self.headers)
-        else:
-            headers = self.headers
         return requests.post(url, data=data, json=json, files=files, headers=headers)
     
     def put(self, url, data=None, json=None, files=None, headers=None):
         assert url
         assert (not data or isinstance(data, dict))
-        if headers and isinstance(headers, dict):
-            headers = headers.update(self.headers) if self.headers else headers
-        else:
-            headers = self.headers
         return requests.put(url, data, json=json, files=files, headers=headers)
     
     def delete(self, url, headers=None):
         assert url
         assert (not data or isinstance(data, dict))
-        if headers and isinstance(headers, dict):
-            headers = headers.update(self.headers) if self.headers else headers
-        else:
-            headers = self.headers
         return requests.delete(url, headers=headers)
     
     def options(self, url, headers=None):
         assert url
         assert (not data or isinstance(data, dict))
-        if headers and isinstance(headers, dict):
-            headers = headers.update(self.headers) if self.headers else headers
-        else:
-            headers = self.headers
         return requests.options(url, headers=headers)
 
 
