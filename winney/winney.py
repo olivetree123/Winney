@@ -11,11 +11,11 @@ from requests.utils import guess_json_utf
 META_CACHE_KEY    = "WINNEY:META:{REQUEST_URL}"
 CONTENT_CACHE_KEY = "WINNEY:CONTENT:{REQUEST_URL}"
 
-red = redis.Redis(host="localhost")
+# red = redis.Redis(host="localhost")
 
 class Result(object):
     
-    def __init__(self, resp=None, url=None, method=None, cache_time=None):
+    def __init__(self, resp=None, url=None, method=None, cache_time=None, redis_conn=None):
         if resp and not isinstance(resp, requests.Response):
             raise Exception("resp should be object of requests.Response, but {} found.".format(type(resp)))
         self.status   = resp.ok
@@ -23,6 +23,7 @@ class Result(object):
         self.content  = resp.content
         self.headers  = resp.headers.__repr__()
         self.encoding = resp.encoding
+        self.redis_conn = redis_conn
         self.status_code = resp.status_code
         self.request_url = url
         self.request_method = method
@@ -31,7 +32,7 @@ class Result(object):
         self.set_cache(cache_time)
     
     def set_cache(self, cache_time):
-        if not cache_time:
+        if not (self.redis_conn and cache_time):
             return
         if not (self.request_method and self.request_method.upper() == "GET"):
             print("Cache just for GET, but {} found".format(self.request_method))
@@ -46,18 +47,18 @@ class Result(object):
         }
         meta_key    = META_CACHE_KEY.format(REQUEST_URL=self.request_url)
         content_key = CONTENT_CACHE_KEY.format(REQUEST_URL=self.request_url)
-        red.set(meta_key, json.dumps(meta_data), ex=cache_time)
-        red.set(content_key, self.content, ex=cache_time)
+        self.redis_conn.set(meta_key, json.dumps(meta_data), ex=cache_time)
+        self.redis_conn.set(content_key, self.content, ex=cache_time)
     
     @classmethod
-    def load_from_cache(cls, request_url, request_method):
-        if not (request_method and request_method.upper() == "GET"):
+    def load_from_cache(cls, request_url, request_method, redis_conn):
+        if not (redis_conn and request_method and request_method.upper() == "GET"):
             print("Cache not found.")
             return None
         meta_key    = META_CACHE_KEY.format(REQUEST_URL=request_url)
         content_key = CONTENT_CACHE_KEY.format(REQUEST_URL=request_url)
-        meta_data   = red.get(meta_key)
-        content     = red.get(content_key)
+        meta_data   = redis_conn.get(meta_key)
+        content     = redis_conn.get(content_key)
         if not (meta_data and content):
             return None
         result = cls()
@@ -106,7 +107,7 @@ class Result(object):
 
 class Winney(object):
 
-    def __init__(self, host, port=80, protocol="http", headers=None):
+    def __init__(self, host, port=80, protocol="http", headers=None, redis_host=None, redis_port=None):
         self.host = host
         self.port = port
         self.headers = headers
@@ -117,6 +118,9 @@ class Winney(object):
         self.RESULT_FORMATS = ["json", "unicode", "bytes"]
         self.result = {}
         self.apis = []
+        self.redis_conn = None
+        if redis_host and redis_port:
+            self.redis_conn = redis.Redis(host=redis_host, port=redis_port)
     
     def _bind_func_url(self, url, method, cache_time=None):
         def req(data=None, json=None, files=None, headers=None, **kwargs):
@@ -124,11 +128,11 @@ class Winney(object):
                 raise Exception("data 和 json 不可以同时存在")
             url2 = url.format(**kwargs)
             if cache_time:
-                r = Result.load_from_cache(url2, method)
+                r = Result.load_from_cache(url2, method, self.redis_conn)
                 if r:
                     return r
             r = self.request(method, url2, data, json, files, headers)
-            return Result(r, url2, method, cache_time)
+            return Result(r, url2, method, cache_time, self.redis_conn)
         return req
     
     def add_url(self, method, uri, function_name, cache_time=None):
