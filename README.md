@@ -1,7 +1,7 @@
 # Winney 面向对象的 HTTP 请求  
 
 ## Tutorial
-```
+``` python
 wy = Winney(host="www.baidu.com")
 wy.add_url(method="get", uri="/", function_name="download")
 wy.download()
@@ -10,7 +10,7 @@ print(t)
 ```
 
 ## The Best Practice
-```
+``` python
 from winney import Winney
 
 from config import ZEUS_HOST, ZEUS_PORT, APP_TYPE, ZEUS_TOKEN_HEADER, ZEUS_TOKEN_VALUE

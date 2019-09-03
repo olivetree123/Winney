@@ -8,8 +8,8 @@ from requests.utils import guess_json_utf
 
 # CACHE just for get 
 
-META_CACHE_KEY    = "WINNEY:META:{REQUEST_URL}"
-CONTENT_CACHE_KEY = "WINNEY:CONTENT:{REQUEST_URL}"
+# META_CACHE_KEY    = "WINNEY:META:{REQUEST_URL}"
+# CONTENT_CACHE_KEY = "WINNEY:CONTENT:{REQUEST_URL}"
 
 # red = redis.Redis(host="localhost")
 
