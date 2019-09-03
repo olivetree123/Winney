@@ -11,9 +11,9 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name = "Winney",
-    version = "0.2.9",
+    version = "0.3.0",
     author = "Gaojian",
-    license = 'MIT',
+    license = "MIT",
     packages = ["winney"],
     author_email = "olivetree123@163.com",
     url = "https://github.com/olivetree123/Winney",
