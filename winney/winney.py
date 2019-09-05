@@ -30,8 +30,9 @@ class Result(object):
         self.status_code = resp.status_code
         self.request_url = url
         self.request_method = method
-        if not self.encoding:
-            self.encoding = chardet.detect(self.content)["encoding"]
+        self.encoding = None
+        # if not self.encoding:
+        #     self.encoding = chardet.detect(self.content)["encoding"]
         # self.set_cache(cache_time)
     
     # def set_cache(self, cache_time):
@@ -81,6 +82,8 @@ class Result(object):
         Quoted from: requests.models.text()
         """
         text = None
+        if not self.encoding:
+            self.encoding = chardet.detect(self.content)["encoding"]
         try:
             text = str(self.content, self.encoding, errors='replace')
         except (LookupError, TypeError):
@@ -91,6 +94,8 @@ class Result(object):
         """
         Quoted from: requests.models.json()
         """
+        if not self.encoding:
+            self.encoding = chardet.detect(self.content)["encoding"]
         if not self.encoding and self.content and len(self.content) > 3:
             # No encoding set. JSON RFC 4627 section 3 states we should expect
             # UTF-8, -16 or -32. Detect which one to use; If the detection or
