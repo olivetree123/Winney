@@ -110,6 +110,9 @@ class Result(object):
                 except UnicodeDecodeError:
                     pass
         return json.loads(self.get_text(), **kwargs)
+    
+    def json(self, **kwargs):
+        return self.get_json(kwargs)
         
 
 
@@ -156,6 +159,9 @@ class Winney(object):
         setattr(self, function_name, self._bind_func_url(url, method, cache_time))
         self.apis.append(function_name)
         return getattr(self, function_name)
+    
+    def register(self, method, name, uri):
+        self.add_url(method, uri, name)
     
     def request(self, method, url, data=None, json=None, files=None, headers=None):
         if headers and isinstance(headers, dict):
