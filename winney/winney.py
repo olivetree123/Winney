@@ -112,7 +112,7 @@ class Result(object):
         return json.loads(self.get_text(), **kwargs)
     
     def json(self, **kwargs):
-        return self.get_json(kwargs)
+        return self.get_json(**kwargs)
         
 
 
@@ -179,6 +179,8 @@ class Winney(object):
             return self.post(url, data=data, json=json, files=files, headers=headers)
         if method.upper() == "PUT":
             return self.put(url, data=data, json=json, files=files, headers=headers)
+        if method.upper() == "DELETE":
+            return self.delete(url, headers=headers)
 
     def get(self, url, data=None, headers=None):
         assert url
@@ -198,12 +200,10 @@ class Winney(object):
     
     def delete(self, url, headers=None):
         assert url
-        assert (not data or isinstance(data, dict))
         return requests.delete(url, headers=headers)
     
     def options(self, url, headers=None):
         assert url
-        assert (not data or isinstance(data, dict))
         return requests.options(url, headers=headers)
 
 

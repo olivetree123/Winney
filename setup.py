@@ -11,8 +11,8 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name = "Winney",
-    version = "0.3.2",
-    author = "Gaojian",
+    version = "0.3.3",
+    author = "olivetree",
     license = "MIT",
     packages = ["winney"],
     author_email = "olivetree123@163.com",
