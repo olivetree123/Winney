@@ -180,7 +180,7 @@ class Winney(object):
         if method.upper() == "PUT":
             return self.put(url, data=data, json=json, files=files, headers=headers)
         if method.upper() == "DELETE":
-            return self.delete(url, headers=headers)
+            return self.delete(url, data=data, headers=headers)
 
     def get(self, url, data=None, headers=None):
         assert url
@@ -198,9 +198,10 @@ class Winney(object):
         assert (not data or isinstance(data, dict))
         return requests.put(url, data, json=json, files=files, headers=headers)
     
-    def delete(self, url, headers=None):
+    def delete(self, url, data=None, headers=None):
         assert url
-        return requests.delete(url, headers=headers)
+        assert (not data or isinstance(data, dict))
+        return requests.delete(url, data=data, headers=headers)
     
     def options(self, url, headers=None):
         assert url
