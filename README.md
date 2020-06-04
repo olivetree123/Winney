@@ -1,5 +1,5 @@
 # winney
-![pypi](https://img.shields.io/pypi/v/winney?color=brightgreen) ![Codacy Badge](https://app.codacy.com/project/badge/Grade/6e1a16da7b3747e0b69440fd3826e8f3)
+![pypi](https://img.shields.io/pypi/v/winney?color=blue) ![Codacy Badge](https://app.codacy.com/project/badge/Grade/6e1a16da7b3747e0b69440fd3826e8f3)
 ## Tutorial
 ``` python
 from winney import Winney
