@@ -1,11 +1,11 @@
-# winney 面向对象的 HTTP 请求  
-
+# winney
+![pypi](https://img.shields.io/pypi/v/winney?color=brightgreen) ![Codacy Badge](https://app.codacy.com/project/badge/Grade/6e1a16da7b3747e0b69440fd3826e8f3)
 ## Tutorial
 ``` python
 from winney import Winney
 
 wy = Winney(host="www.baidu.com")
-wy.add_url(method="get", uri="/", function_name="download")
+wy.register(method="get", uri="/", function_name="download")
 wy.download()
 t = wy.get_bytes()
 print(t)
