@@ -123,15 +123,20 @@ class Winney(object):
         self.port = port
         self.headers = headers
         self.protocol = protocol
-        self.domain = "{}://{}".format(protocol, host)
-        if port and port != 80:
-            self.domain = self.domain+":"+str(port)
+        self.domain = ""
+        self.build_domain()
+        # self.domain = "{}://{}".format(protocol, host)
+        # if port and port != 80:
+        #     self.domain = self.domain+":"+str(port)
         self.RESULT_FORMATS = ["json", "unicode", "bytes"]
         self.result = {}
         self.apis = []
         self.redis_conn = None
         # if redis_host and redis_port:
         #     self.redis_conn = redis.Redis(host=redis_host, port=redis_port)
+
+    def build_domain(self):
+        self.domain = "{}://{}:{}".format(self.protocol, self.host, self.port)
     
     def _bind_func_url(self, url, method, cache_time=None):
         def req(data=None, json=None, files=None, headers=None, **kwargs):
@@ -155,8 +160,8 @@ class Winney(object):
         function_name = function_name.lower()
         if function_name in self.apis:
             raise Exception("Duplicate function_name, {}".format(function_name))
-        url = urllib.parse.urljoin(self.domain, uri)
-        setattr(self, function_name, self._bind_func_url(url, method, cache_time))
+        # url = urllib.parse.urljoin(self.domain, uri)
+        setattr(self, function_name, self._bind_func_url(uri, method, cache_time))
         self.apis.append(function_name)
         return getattr(self, function_name)
     
@@ -164,6 +169,7 @@ class Winney(object):
         self.add_url(method, uri, name)
     
     def request(self, method, url, data=None, json=None, files=None, headers=None):
+        url = urllib.parse.urljoin(self.domain, url)
         if headers and isinstance(headers, dict):
             if self.headers:
                 for key, value in self.headers.items():
