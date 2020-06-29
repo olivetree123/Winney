@@ -19,8 +19,6 @@ class Result(object):
         self.request_url = url
         self.request_method = method
         self.encoding = None
-        # if not self.encoding:
-        #     self.encoding = chardet.detect(self.content)["encoding"]
 
 
     def ok(self):
@@ -78,9 +76,6 @@ class Winney(object):
         self.base_path = base_path
         self.domain = ""
         self.build_domain()
-        # self.domain = "{}://{}".format(protocol, host)
-        # if port and port != 80:
-        #     self.domain = self.domain+":"+str(port)
         self.RESULT_FORMATS = ["json", "unicode", "bytes"]
         self.result = {}
         self.apis = []
@@ -138,13 +133,11 @@ class Winney(object):
     
     def post(self, url, data=None, json=None, files=None, headers=None):
         assert url
-        assert (not data or isinstance(data, dict))
         assert (not json or isinstance(json, dict))
         return requests.post(url, data=data, json=json, files=files, headers=headers)
     
     def put(self, url, data=None, json=None, files=None, headers=None):
         assert url
-        assert (not data or isinstance(data, dict))
         return requests.put(url, data, json=json, files=files, headers=headers)
     
     def delete(self, url, data=None, headers=None):
@@ -155,12 +148,3 @@ class Winney(object):
     def options(self, url, headers=None):
         assert url
         return requests.options(url, headers=headers)
-
-
-
-if __name__ == "__main__":
-    wy = Winney(host="www.baidu.com")
-    wy.add_url(method="get", uri="/", function_name="download")
-    r = wy.download()
-    t = r.get_bytes()
-    print(t)
