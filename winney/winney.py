@@ -5,21 +5,23 @@ import requests
 import urllib.parse
 from requests.utils import guess_json_utf
 
+from winney.mock import Mock
+from winney.errors import WinneyRequestError, WinneyParamError
+
 
 class Result(object):
     def __init__(self, resp=None, url=None, method=None):
         if resp and not isinstance(resp, requests.Response):
-            raise Exception("resp should be object of requests.Response, but {} found.".format(type(resp)))
-        self.status   = resp.ok
-        self.reason   = resp.reason
-        self.content  = resp.content
-        self.headers  = resp.headers.__repr__()
-        self.encoding = resp.encoding
-        self.status_code = resp.status_code
+            raise WinneyParamError("resp should be object of requests.Response, but {} found.".format(type(resp)))
+        self.status   = resp.ok if resp else False
+        self.reason   = resp.reason if resp else None
+        self.content  = resp.content if resp else None
+        self.headers  = resp.headers.__repr__() if resp else None
+        self.encoding = resp.encoding if resp else None
+        self.status_code = resp.status_code if resp else None
         self.request_url = url
         self.request_method = method
         self.encoding = None
-
 
     def ok(self):
         return self.status
@@ -63,7 +65,6 @@ class Result(object):
     
     def json(self, **kwargs):
         return self.get_json(**kwargs)
-        
 
 
 class Winney(object):
@@ -75,37 +76,41 @@ class Winney(object):
         self.protocol = protocol
         self.base_path = base_path
         self.domain = ""
-        self.build_domain()
-        self.RESULT_FORMATS = ["json", "unicode", "bytes"]
         self.result = {}
         self.apis = []
+        self.build_domain()
 
     def build_domain(self):
         self.domain = "{}://{}:{}".format(self.protocol, self.host, self.port)
     
-    def _bind_func_url(self, url, method):
+    def _bind_func_url(self, url, method, use_mock=False, mock_data=None):
         def req(data=None, json=None, files=None, headers=None, **kwargs):
-            if data and json:
-                raise Exception("data 和 json 不可以同时存在")
             url2 = url.format(**kwargs)
+            if use_mock:
+                r = Result(url=url2, method=method)
+                r.status = True
+                r.encoding = "utf8"
+                r.content = bytes(mock_data.to_string(), encoding=r.encoding)
+                return r
             r = self.request(method, url2, data, json, files, headers)
+            if not r:
+                raise WinneyRequestError("failed to request url = {}, it returned null".format(url2))
             return Result(r, url2, method)
         return req
     
-    def add_url(self, method, uri, function_name):
+    def register(self, method, name, uri, use_mock=False, mock_data: Mock=None):
+        if use_mock and not isinstance(mock_data, Mock):
+            raise WinneyParamError("mock_data should be type of winney.Mock, but type {} found".format(type(mock_data)))
         method = method.upper()
-        function_name = function_name.lower()
-        if function_name in self.apis:
-            raise Exception("Duplicate function_name, {}".format(function_name))
-        # url = urllib.parse.urljoin(self.domain, uri)
-        setattr(self, function_name, self._bind_func_url(uri, method))
-        self.apis.append(function_name)
-        return getattr(self, function_name)
-    
-    def register(self, method, name, uri):
-        self.add_url(method, uri, name)
+        name = name.lower()
+        if name in self.apis:
+            raise WinneyParamError("Duplicate name = {}".format(name))
+        setattr(self, name, self._bind_func_url(uri, method, use_mock, mock_data))
+        self.apis.append(name)
+        return getattr(self, name)
     
     def request(self, method, url, data=None, json=None, files=None, headers=None):
+        # 每次请求都计算 url，因为有遇到 url 改变的情况
         url = "/".join([self.base_path, url]).replace("//", "/").replace("//", "/") \
                 if self.base_path else url
         url = urllib.parse.urljoin(self.domain, url)
@@ -127,24 +132,16 @@ class Winney(object):
             return self.delete(url, data=data, headers=headers)
 
     def get(self, url, data=None, headers=None):
-        assert url
-        assert (not data or isinstance(data, dict))
         return requests.get(url, params=data, headers=headers)
     
     def post(self, url, data=None, json=None, files=None, headers=None):
-        assert url
-        assert (not json or isinstance(json, dict))
         return requests.post(url, data=data, json=json, files=files, headers=headers)
     
     def put(self, url, data=None, json=None, files=None, headers=None):
-        assert url
         return requests.put(url, data, json=json, files=files, headers=headers)
     
     def delete(self, url, data=None, headers=None):
-        assert url
-        assert (not data or isinstance(data, dict))
         return requests.delete(url, data=data, headers=headers)
     
     def options(self, url, headers=None):
-        assert url
         return requests.options(url, headers=headers)
