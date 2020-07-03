@@ -12,11 +12,13 @@ from winney.errors import WinneyRequestError, WinneyParamError
 class Result(object):
     def __init__(self, resp=None, url=None, method=None):
         if resp and not isinstance(resp, requests.Response):
-            raise WinneyParamError("resp should be object of requests.Response, but {} found.".format(type(resp)))
-        self.status   = resp.ok if resp else False
-        self.reason   = resp.reason if resp else None
-        self.content  = resp.content if resp else None
-        self.headers  = resp.headers.__repr__() if resp else None
+            raise WinneyParamError(
+                "resp should be object of requests.Response, but {} found.".
+                format(type(resp)))
+        self.status = resp.ok if resp else False
+        self.reason = resp.reason if resp else None
+        self.content = resp.content if resp else None
+        self.headers = resp.headers.__repr__() if resp else None
         self.encoding = resp.encoding if resp else None
         self.status_code = resp.status_code if resp else None
         self.request_url = url
@@ -25,10 +27,10 @@ class Result(object):
 
     def ok(self):
         return self.status
-    
+
     def get_bytes(self):
         return self.content
-    
+
     def get_text(self):
         """
         Quoted from: requests.models.text()
@@ -56,20 +58,22 @@ class Result(object):
             encoding = guess_json_utf(self.content)
             if encoding is not None:
                 try:
-                    return json.loads(
-                        self.content.decode(encoding), **kwargs
-                    )
+                    return json.loads(self.content.decode(encoding), **kwargs)
                 except UnicodeDecodeError:
                     pass
         return json.loads(self.get_text(), **kwargs)
-    
+
     def json(self, **kwargs):
         return self.get_json(**kwargs)
 
 
 class Winney(object):
-
-    def __init__(self, host, port=80, protocol="http", headers=None, base_path=""):
+    def __init__(self,
+                 host,
+                 port=80,
+                 protocol="http",
+                 headers=None,
+                 base_path=""):
         self.host = host
         self.port = port
         self.headers = headers
@@ -82,11 +86,11 @@ class Winney(object):
 
     def build_domain(self):
         self.domain = "{}://{}:{}".format(self.protocol, self.host, self.port)
-    
-    def _bind_func_url(self, url, method, use_mock=False, mock_data=None):
+
+    def _bind_func_url(self, url, method, mock=False, mock_data=None):
         def req(data=None, json=None, files=None, headers=None, **kwargs):
             url2 = url.format(**kwargs)
-            if use_mock:
+            if mock:
                 r = Result(url=url2, method=method)
                 r.status = True
                 r.encoding = "utf8"
@@ -94,22 +98,33 @@ class Winney(object):
                 return r
             r = self.request(method, url2, data, json, files, headers)
             if not r:
-                raise WinneyRequestError("failed to request url = {}, it returned null".format(url2))
+                raise WinneyRequestError(
+                    "failed to request url = {}, it returned null".format(
+                        url2))
             return Result(r, url2, method)
+
         return req
-    
-    def register(self, method, name, uri, use_mock=False, mock_data: Mock=None):
-        if use_mock and not isinstance(mock_data, Mock):
-            raise WinneyParamError("mock_data should be type of winney.Mock, but type {} found".format(type(mock_data)))
+
+    def register(self, method, name, uri, mock=False, mock_data: Mock = None):
+        if mock and not isinstance(mock_data, Mock):
+            raise WinneyParamError(
+                "mock_data should be type of winney.Mock, but type {} found".
+                format(type(mock_data)))
         method = method.upper()
         name = name.lower()
         if name in self.apis:
             raise WinneyParamError("Duplicate name = {}".format(name))
-        setattr(self, name, self._bind_func_url(uri, method, use_mock, mock_data))
+        setattr(self, name, self._bind_func_url(uri, method, mock, mock_data))
         self.apis.append(name)
         return getattr(self, name)
-    
-    def request(self, method, url, data=None, json=None, files=None, headers=None):
+
+    def request(self,
+                method,
+                url,
+                data=None,
+                json=None,
+                files=None,
+                headers=None):
         # 每次请求都计算 url，因为有遇到 url 改变的情况
         url = "/".join([self.base_path, url]).replace("//", "/").replace("//", "/") \
                 if self.base_path else url
@@ -125,23 +140,35 @@ class Winney(object):
         if method.upper() == "GET":
             return self.get(url, data, headers=headers)
         if method.upper() == "POST":
-            return self.post(url, data=data, json=json, files=files, headers=headers)
+            return self.post(url,
+                             data=data,
+                             json=json,
+                             files=files,
+                             headers=headers)
         if method.upper() == "PUT":
-            return self.put(url, data=data, json=json, files=files, headers=headers)
+            return self.put(url,
+                            data=data,
+                            json=json,
+                            files=files,
+                            headers=headers)
         if method.upper() == "DELETE":
             return self.delete(url, data=data, headers=headers)
 
     def get(self, url, data=None, headers=None):
         return requests.get(url, params=data, headers=headers)
-    
+
     def post(self, url, data=None, json=None, files=None, headers=None):
-        return requests.post(url, data=data, json=json, files=files, headers=headers)
-    
+        return requests.post(url,
+                             data=data,
+                             json=json,
+                             files=files,
+                             headers=headers)
+
     def put(self, url, data=None, json=None, files=None, headers=None):
         return requests.put(url, data, json=json, files=files, headers=headers)
-    
+
     def delete(self, url, data=None, headers=None):
         return requests.delete(url, data=data, headers=headers)
-    
+
     def options(self, url, headers=None):
         return requests.options(url, headers=headers)

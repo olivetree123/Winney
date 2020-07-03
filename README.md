@@ -8,9 +8,9 @@
 ``` python
 from winney import Winney
 
-wy = Winney(host="www.baidu.com")
-wy.register(method="get", uri="/", function_name="download")
-wy.download()
-t = wy.get_bytes()
+baidu = Winney(host="baidu.com")
+baidu.register(method="get", name="get_home", uri="/home", use_mock=True, mock_data=MockData())
+r = baidu.get_home()
+print(r.json())
 print(t)
 ```

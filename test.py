@@ -7,7 +7,7 @@ class MockData(Mock):
 
 
 if __name__ == "__main__":
-    wy = Winney(host="class.h3c.com", port=5007)
-    wy.register(method="get", name="get_app_list", uri="/ilearning/app/list", use_mock=True, mock_data=MockData())
-    r = wy.get_app_list()
-    print(r.get_json())
+    baidu = Winney(host="baidu.com")
+    baidu.register(method="get", name="get_home", uri="/home", use_mock=True, mock_data=MockData())
+    r = baidu.get_home()
+    print(r.json())
