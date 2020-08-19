@@ -97,10 +97,11 @@ class Winney(object):
                 r.content = bytes(mock_data.to_string(), encoding=r.encoding)
                 return r
             r = self.request(method, url2, data, json, files, headers)
-            if not r:
-                raise WinneyRequestError(
-                    "failed to request url = {}, it returned null".format(
-                        url2))
+            # if r.status_code > 200, not r is True
+            # if not r:
+            #     raise WinneyRequestError(
+            #         "failed to request url = {}, it returned null".format(
+            #             url2))
             return Result(r, url2, method)
 
         return req
