@@ -23,7 +23,7 @@ class Result(object):
         self.status_code = resp.status_code if resp else None
         self.request_url = url
         self.request_method = method
-        self.encoding = None
+        # self.encoding = None
 
     def ok(self):
         return self.status
