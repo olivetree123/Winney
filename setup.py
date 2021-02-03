@@ -10,17 +10,17 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name = "winney",
-    version = "0.4.2",
-    author = "olivetree",
-    license = "MIT",
-    packages = ["winney"],
-    author_email = "olivetree123@163.com",
-    url = "https://github.com/olivetree123/winney",
-    description = "Object-Oriented HTTP Request",
-    long_description = long_description,
-    long_description_content_type = "text/markdown",
-    install_requires = [
+    name="winney",
+    version="0.5.0",
+    author="olivetree",
+    license="MIT",
+    packages=["winney"],
+    author_email="olivetree123@163.com",
+    url="https://github.com/olivetree123/winney",
+    description="Object-Oriented HTTP Request",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    install_requires=[
         "requests>=2.18.0",
     ],
 )

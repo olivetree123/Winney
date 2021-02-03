@@ -1,12 +1,13 @@
 #coding:utf-8
 import json
+from typing import List
 import chardet
 import requests
 import urllib.parse
 from requests.utils import guess_json_utf
 
 from winney.mock import Mock
-from winney.errors import WinneyRequestError, WinneyParamError
+from winney.errors import NoServerAvalible, WinneyParamError
 
 
 class Result(object):
@@ -67,11 +68,37 @@ class Result(object):
         return self.get_json(**kwargs)
 
 
+class Address(object):
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+
+
+def retry(func):
+    def wrapper(self, *args, **kwargs):
+        counter = 0
+        while counter < len(self.winney.addrs):
+            try:
+                counter += 1
+                r = func(self, *args, **kwargs)
+            except Exception as e:
+                print(e)
+                self.winney._next()
+                continue
+            return r
+        raise NoServerAvalible(
+            "cannot find an avalible server for request: {}".format(
+                self.winney.url))
+
+    return wrapper
+
+
 class Winney(object):
     def __init__(self,
                  host,
                  port=80,
                  protocol="http",
+                 addrs: List[Address] = None,
                  headers=None,
                  base_path=""):
         self.host = host
@@ -79,9 +106,20 @@ class Winney(object):
         self.headers = headers
         self.protocol = protocol
         self.base_path = base_path
+        self.addrs = addrs if addrs else []
+        self._index = 0
         self.domain = ""
+        self.url = ""
         self.result = {}
         self.apis = []
+        self.build_domain()
+
+    def _next(self):
+        if not self.addrs:
+            return
+        self._index = (self._index + 1) % len(self.addrs)
+        self.host = self.addrs[self._index].host
+        self.port = self.addrs[self._index].port
         self.build_domain()
 
     def build_domain(self):
@@ -129,6 +167,7 @@ class Winney(object):
         # 每次请求都计算 url，因为有遇到 url 改变的情况
         url = "/".join([self.base_path, url]).replace("//", "/").replace("//", "/") \
                 if self.base_path else url
+        self.url = url
         url = urllib.parse.urljoin(self.domain, url)
         if headers and isinstance(headers, dict):
             if self.headers:
