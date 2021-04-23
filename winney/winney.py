@@ -194,21 +194,39 @@ class Winney(object):
         if method.upper() == "DELETE":
             return self.delete(url, data=data, headers=headers)
 
-    def get(self, url, data=None, headers=None):
-        return requests.get(url, params=data, headers=headers)
+    def get(self, url, data=None, headers=None, **kwargs):
+        return requests.get(url, params=data, headers=headers, **kwargs)
 
-    def post(self, url, data=None, json=None, files=None, headers=None):
+    def post(self,
+             url,
+             data=None,
+             json=None,
+             files=None,
+             headers=None,
+             **kwargs):
         return requests.post(url,
                              data=data,
                              json=json,
                              files=files,
-                             headers=headers)
+                             headers=headers,
+                             **kwargs)
 
-    def put(self, url, data=None, json=None, files=None, headers=None):
-        return requests.put(url, data, json=json, files=files, headers=headers)
+    def put(self,
+            url,
+            data=None,
+            json=None,
+            files=None,
+            headers=None,
+            **kwargs):
+        return requests.put(url,
+                            data,
+                            json=json,
+                            files=files,
+                            headers=headers,
+                            **kwargs)
 
-    def delete(self, url, data=None, headers=None):
-        return requests.delete(url, data=data, headers=headers)
+    def delete(self, url, data=None, headers=None, **kwargs):
+        return requests.delete(url, data=data, headers=headers, **kwargs)
 
-    def options(self, url, headers=None):
-        return requests.options(url, headers=headers)
+    def options(self, url, headers=None, **kwargs):
+        return requests.options(url, headers=headers, **kwargs)
