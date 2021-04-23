@@ -100,12 +100,14 @@ class Winney(object):
                  protocol="http",
                  addrs: List[Address] = None,
                  headers=None,
-                 base_path=""):
+                 base_path="",
+                 ssl_verify=True):
         self.host = host
         self.port = port
         self.headers = headers
         self.protocol = protocol
         self.base_path = base_path
+        self.ssl_verify = ssl_verify
         self.addrs = addrs if addrs else []
         self._index = 0
         self.domain = ""
@@ -194,39 +196,33 @@ class Winney(object):
         if method.upper() == "DELETE":
             return self.delete(url, data=data, headers=headers)
 
-    def get(self, url, data=None, headers=None, **kwargs):
-        return requests.get(url, params=data, headers=headers, **kwargs)
+    def get(self, url, data=None, headers=None):
+        return requests.get(url,
+                            params=data,
+                            headers=headers,
+                            verify=self.ssl_verify)
 
-    def post(self,
-             url,
-             data=None,
-             json=None,
-             files=None,
-             headers=None,
-             **kwargs):
+    def post(self, url, data=None, json=None, files=None, headers=None):
         return requests.post(url,
                              data=data,
                              json=json,
                              files=files,
                              headers=headers,
-                             **kwargs)
+                             verify=self.ssl_verify)
 
-    def put(self,
-            url,
-            data=None,
-            json=None,
-            files=None,
-            headers=None,
-            **kwargs):
+    def put(self, url, data=None, json=None, files=None, headers=None):
         return requests.put(url,
                             data,
                             json=json,
                             files=files,
                             headers=headers,
-                            **kwargs)
+                            verify=self.ssl_verify)
 
-    def delete(self, url, data=None, headers=None, **kwargs):
-        return requests.delete(url, data=data, headers=headers, **kwargs)
+    def delete(self, url, data=None, headers=None):
+        return requests.delete(url,
+                               data=data,
+                               headers=headers,
+                               verify=self.ssl_verify)
 
-    def options(self, url, headers=None, **kwargs):
-        return requests.options(url, headers=headers, **kwargs)
+    def options(self, url, headers=None):
+        return requests.options(url, headers=headers, verify=self.ssl_verify)
