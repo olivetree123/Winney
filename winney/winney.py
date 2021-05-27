@@ -12,16 +12,16 @@ from winney.errors import NoServerAvalible, WinneyParamError
 
 class Result(object):
     def __init__(self, resp=None, url=None, method=None):
-        if resp and not isinstance(resp, requests.Response):
+        if resp is not None and not isinstance(resp, requests.Response):
             raise WinneyParamError(
                 "resp should be object of requests.Response, but {} found.".
                 format(type(resp)))
-        self.status = resp.ok if resp else False
-        self.reason = resp.reason if resp else None
-        self.content = resp.content if resp else None
-        self.headers = resp.headers.__repr__() if resp else None
-        self.encoding = resp.encoding if resp else None
-        self.status_code = resp.status_code if resp else None
+        self.status = getattr(resp, "status", None)
+        self.reason = getattr(resp, "reason", None)
+        self.content = getattr(resp, "content", None)
+        self.encoding = getattr(resp, "encoding", None)
+        self.status_code = getattr(resp, "status_code", None)
+        self.headers = resp.headers.__repr__() if resp is not None else None
         self.request_url = url
         self.request_method = method
         # self.encoding = None
