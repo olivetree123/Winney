@@ -16,7 +16,7 @@ class Result(object):
             raise WinneyParamError(
                 "resp should be object of requests.Response, but {} found.".
                 format(type(resp)))
-        self.status = getattr(resp, "status", None)
+        self.status = getattr(resp, "ok", None)
         self.reason = getattr(resp, "reason", None)
         self.content = getattr(resp, "content", None)
         self.encoding = getattr(resp, "encoding", None)
