@@ -73,6 +73,12 @@ class Address(object):
         self.host = host
         self.port = port
 
+    def json(self):
+        return {
+            "host": self.host,
+            "port": self.port,
+        }
+
 
 def retry(func):
     def wrapper(self, *args, **kwargs):
@@ -81,14 +87,15 @@ def retry(func):
             try:
                 counter += 1
                 r = func(self, *args, **kwargs)
-            except Exception as e:
+            except requests.exceptions.ConnectionError as e:
                 print(e)
                 self.winney._next()
                 continue
             return r
+        addrs = [addr.json() for addr in self.winney.addrs]
         raise NoServerAvalible(
-            "cannot find an avalible server for request: {}".format(
-                self.winney.url))
+            "cannot find an avalible server for request: url={}, addrs={}".
+            format(self.winney.url, addrs))
 
     return wrapper
 
